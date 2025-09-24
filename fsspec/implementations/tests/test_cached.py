@@ -1342,3 +1342,17 @@ def test_filecache_write(tmpdir, m):
 def test_cache_protocol_is_preserved():
     fs = fsspec.filesystem("filecache", target_protocol="file")
     assert fs.protocol == "filecache"
+
+
+@pytest.mark.parametrize("protocol", ["simplecache", "filecache"])
+def test_local_temp_file_put_by_list2(protocol, mocker, tmp_path) -> None:
+    filesystem = fsspec.filesystem(protocol, target_protocol="memory")
+
+    spy_put = mocker.spy(filesystem.fs, "put")
+    spy_isdir = mocker.spy(filesystem.fs, "isdir")
+
+    with filesystem.open("memory://some/file.txt", mode="wb") as file:
+        file.write(b"hello")
+
+    spy_isdir.assert_not_called()
+    spy_put.assert_called_once_with([file.name], ["/some/file.txt"])

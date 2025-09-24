@@ -984,7 +984,8 @@ class LocalTempFile:
         os.remove(self.fn)
 
     def commit(self):
-        self.fs.put(self.fn, self.path, **self.kwargs)
+        # calling put() with list arguments avoids expensive isdir() checks
+        self.fs.put([self.fn], [self.path], **self.kwargs)
         # we do not delete the local copy, it's still in the cache.
 
     @property
